@@ -33,5 +33,4 @@ public class FolderImpl implements Folder {
 	public Map<String, String> getAttributes() {
 		return null;
 	}
-
 }

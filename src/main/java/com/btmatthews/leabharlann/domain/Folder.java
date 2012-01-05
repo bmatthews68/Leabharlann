@@ -3,7 +3,7 @@ package com.btmatthews.leabharlann.domain;
 import java.util.Map;
 
 public interface Folder {
-
+	
 	String getId();
 	
 	String getName();

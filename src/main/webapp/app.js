@@ -83,6 +83,15 @@ var grid = Ext.create('Ext.grid.Panel', {
             dataIndex: 'lastModified'
         }
     ],
+    listeners: {
+    	itemClick: function(panel, file) {
+    		var target = {
+    				href: 'files/' + file.id,
+    				title: file.name
+    		};
+    		Ext.ux.Lightbox.open(target);
+    	}
+    },
     viewConfig: {
         stripeRows: true
     }

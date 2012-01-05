@@ -1,7 +1,9 @@
 package com.btmatthews.leabharlann.service.impl;
 
+import java.io.InputStream;
 import java.util.Calendar;
 
+import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
@@ -10,14 +12,18 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.btmatthews.leabharlann.domain.File;
 import com.btmatthews.leabharlann.domain.Folder;
+import com.btmatthews.leabharlann.domain.Workspace;
 import com.btmatthews.leabharlann.service.FileCallback;
+import com.btmatthews.leabharlann.service.FileDataCallback;
 import com.btmatthews.leabharlann.service.FolderCallback;
 import com.btmatthews.leabharlann.service.LibraryService;
+import com.btmatthews.leabharlann.service.WorkspaceCallback;
 
 @Service
 public class LibraryServiceImpl implements LibraryService {
@@ -29,8 +35,28 @@ public class LibraryServiceImpl implements LibraryService {
 		repository = repo;
 	}
 
-	public Folder getRoot() throws Exception {
+	public Workspace getWorkspace(final String workspaceName) throws Exception {
+		return new WorkspaceImpl(workspaceName);
+	}
+
+	public void visitWorkspaces(final WorkspaceCallback callback)
+			throws Exception {
 		final Session session = repository.login();
+		try {
+			final javax.jcr.Workspace workspace = session.getWorkspace();
+			final String[] workspaceNames = workspace
+					.getAccessibleWorkspaceNames();
+			for (final String workspaceName : workspaceNames) {
+				final Workspace workspaceFolder = getWorkspace(workspaceName);
+				callback.visit(workspaceFolder);
+			}
+		} finally {
+			session.logout();
+		}
+	}
+
+	public Folder getRoot(final Workspace workspace) throws Exception {
+		final Session session = repository.login(workspace.getName());
 		try {
 			final Node root = session.getRootNode();
 			return getFolder(root);
@@ -39,8 +65,9 @@ public class LibraryServiceImpl implements LibraryService {
 		}
 	}
 
-	public Folder getFolder(final String id) throws Exception {
-		final Session session = repository.login();
+	public Folder getFolder(final Workspace workspace, final String id)
+			throws Exception {
+		final Session session = repository.login(workspace.getName());
 		try {
 			final Node node = session.getNodeByIdentifier(id);
 			return getFolder(node);
@@ -52,6 +79,17 @@ public class LibraryServiceImpl implements LibraryService {
 	private Folder getFolder(final Node node) throws RepositoryException {
 		return new FolderImpl(node.getIdentifier(), node.getName(),
 				node.getPath());
+	}
+
+	public File getFile(final Workspace workspace, final String id)
+			throws Exception {
+		final Session session = repository.login(workspace.getName());
+		try {
+			final Node node = session.getNodeByIdentifier(id);
+			return getFile(node);
+		} finally {
+			session.logout();
+		}
 	}
 
 	private File getFile(final Node node) throws RepositoryException {
@@ -84,9 +122,10 @@ public class LibraryServiceImpl implements LibraryService {
 		return null;
 	}
 
-	public void visitFolders(final Folder parent, final FolderCallback callback)
-			throws Exception {
-		final Session session = repository.login();
+	public void visitFolders(final Workspace workspace, final Folder parent,
+			final FolderCallback callback) throws Exception {
+
+		final Session session = repository.login(workspace.getName());
 		try {
 			final Node parentNode = session.getNodeByIdentifier(parent.getId());
 			final NodeIterator nodes = parentNode.getNodes();
@@ -102,9 +141,9 @@ public class LibraryServiceImpl implements LibraryService {
 		}
 	}
 
-	public void visitFiles(final Folder parent, final FileCallback callback)
-			throws Exception {
-		final Session session = repository.login();
+	public void visitFiles(final Workspace workspace, final Folder parent,
+			final FileCallback callback) throws Exception {
+		final Session session = repository.login(workspace.getName());
 		try {
 			final Node parentNode = session.getNodeByIdentifier(parent.getId());
 			final NodeIterator nodes = parentNode.getNodes();
@@ -114,6 +153,26 @@ public class LibraryServiceImpl implements LibraryService {
 					final File file = getFile(node);
 					callback.visit(file);
 				}
+			}
+		} finally {
+			session.logout();
+		}
+	}
+
+	public void visitFileData(final Workspace workspace, final File file,
+			final FileDataCallback callback) throws Exception {
+		final Session session = repository.login(workspace.getName());
+		try {
+			final Node fileNode = session.getNodeByIdentifier(file.getId());
+			final Node resourceNode = fileNode.getNode(Node.JCR_CONTENT);
+			final Property dataProperty = resourceNode
+					.getProperty(Property.JCR_DATA);
+			final Binary data = dataProperty.getBinary();
+			final InputStream dataStream = data.getStream();
+			try {
+				callback.visitFileData(file, dataStream);
+			} finally {
+				IOUtils.closeQuietly(dataStream);
 			}
 		} finally {
 			session.logout();

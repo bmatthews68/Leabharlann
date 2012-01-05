@@ -24,32 +24,26 @@ public class FileImpl implements File {
 		this.lastModified = lastModified;
 	}
 
-	@Override
 	public String getId() {
 		return id;
 	}
 
-	@Override
 	public String getName() {
 		return name;
 	}
 
-	@Override
 	public String getPath() {
 		return path;
 	}
 
-	@Override
 	public String getMimeType() {
 		return mimeType;
 	}
 
-	@Override
 	public String getEncoding() {
 		return encoding;
 	}
 
-	@Override
 	public Calendar getLastModified() {
 		return lastModified;
 	}
