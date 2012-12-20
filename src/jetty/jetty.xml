@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
+
+    <New class="org.eclipse.jetty.plus.jndi.Resource">
+        <Arg>
+            <Ref id="Server"/>
+        </Arg>
+        <Arg>jcr/local</Arg>
+        <Arg>
+            <New class="javax.naming.Reference" id="reference">
+                <Arg>javax.jcr.Repository</Arg>
+                <Arg>org.apache.jackrabbit.core.jndi.BindableRepositoryFactory</Arg>
+                <Arg>null</Arg>
+                <Call name="add" id="reference">
+                    <Arg>
+                        <New class="javax.naming.StringRefAddr">
+                            <Arg>configFilePath</Arg>
+                            <Arg>src/jetty/repository.xml</Arg>
+                        </New>
+                    </Arg>
+                </Call>
+                <Call name="add" id="reference">
+                    <Arg>
+                        <New class="javax.naming.StringRefAddr">
+                            <Arg>repHomeDir</Arg>
+                            <Arg>target/repo</Arg>
+                        </New>
+                    </Arg>
+                </Call>
+            </New>
+        </Arg>
+    </New>
+
+</Configure>
