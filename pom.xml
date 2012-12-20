@@ -298,9 +298,9 @@
         </plugins>
     </reporting>
     <scm>
-        <connection>scm:git:git@github.com:bmatthews68/leabharlann.git</connection>
-        <url>https://github.com/bmatthews68/leabharlann</url>
-        <developerConnection>scm:git:git@github.com:bmatthews68/leabharlann.git</developerConnection>
+        <connection>scm:git:git@github.com:bmatthews68/Leabharlann.git</connection>
+        <url>https://github.com/bmatthews68/Leabharlann</url>
+        <developerConnection>scm:git:git@github.com:bmatthews68/Leabharlann.git</developerConnection>
     </scm>
     <url>http://leabharlann.btmatthews.com</url>
     <organization>
@@ -308,13 +308,13 @@
         <url>http://btmatthews.com</url>
     </organization>
     <issueManagement>
-        <url>https://github.com/bmatthews68/leabharlann/issues</url>
+        <url>https://github.com/bmatthews68/Leabharlann/issues</url>
         <system>GitHub</system>
     </issueManagement>
     <distributionManagement>
         <site>
             <id>gh-pages</id>
-            <url>gitsite:git@github.com/bmatthews68/leabharlann.git</url>
+            <url>gitsite:git@github.com/bmatthews68/Leabharlann.git</url>
         </site>
         <repository>
             <id>releases.sonatype</id>
