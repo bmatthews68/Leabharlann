@@ -21,7 +21,7 @@
         http://maven.apache.org/DECORATION/1.1.0
         http://maven.apache.org/xsd/decoration-1.1.0.xsd"
         name="Leabharlann">
-    <!--googleAnalyticsAccountId>UA-5713196-</googleAnalyticsAccountId-->
+    <googleAnalyticsAccountId>UA-5713196-13</googleAnalyticsAccountId>
     <bannerLeft>
         <name>Leabharlann</name>
         <href>http://leabharlann.btmatthews.com</href>
@@ -34,9 +34,7 @@
         </links>
         <menu name="Overview">
             <item name="Introduction" href="index.html"/>
-            <item name="Goals" href="plugin-info.html"/>
-            <item name="Usage" href="usage.html"/>
-        </menu>
+         </menu>
         <menu ref="reports"/>
     </body>
     <poweredBy>
