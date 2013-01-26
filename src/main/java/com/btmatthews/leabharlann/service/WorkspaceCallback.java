@@ -4,5 +4,5 @@ import com.btmatthews.leabharlann.domain.Workspace;
 
 public interface WorkspaceCallback {
 
-	void visit(Workspace workspace);
+	void visit(Workspace workspace) throws Exception;
 }

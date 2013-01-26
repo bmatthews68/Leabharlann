@@ -4,5 +4,5 @@ import com.btmatthews.leabharlann.domain.Folder;
 
 public interface FolderCallback {
 
-	void visit(Folder folder);
+	void visit(Folder folder) throws Exception;
 }

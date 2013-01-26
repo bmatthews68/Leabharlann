@@ -8,6 +8,8 @@ import java.text.SimpleDateFormat;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,25 +40,27 @@ public class LibraryController {
 	}
 
 	@RequestMapping(value = "workspaces.json", produces = "application/json")
-	public void getWorkspaces(final HttpServletResponse response)
+	public void getWorkspaces(final PrintWriter writer)
 			throws Exception {
-		final PrintWriter writer = response.getWriter();
-		writer.println("[");
-		libraryService.visitWorkspaces(new WorkspaceCallback() {
-			public void visit(final Workspace workspace) {
-				writer.println("\t{");
-				writer.println("\t\tname: '" + workspace.getName() + "',");
-				writer.println("\t},");
-			}
-		});
-		writer.println("]");
+        final JsonFactory factory = new JsonFactory();
+        final JsonGenerator generator = factory.createJsonGenerator(writer);
+		generator.writeStartArray();
+        libraryService.visitWorkspaces(new WorkspaceCallback() {
+            public void visit(final Workspace workspace) throws Exception {
+                generator.writeStartObject();
+                generator.writeStringField("name", workspace.getName());
+                generator.writeEndObject();
+            }
+        });
+        generator.writeEndArray();
+        generator.close();
 	}
 
 	@RequestMapping(value = "folders.json", produces = "application/json")
 	public void getFolders(
 			@RequestParam(value = "workspace", defaultValue = DEFAULT_WORKSPACE) final String workspaceName,
 			@RequestParam(value = "node", defaultValue = ROOT_UUID) final String node,
-			final HttpServletResponse response) throws Exception {
+			final PrintWriter writer) throws Exception {
 		final Workspace workspace = libraryService.getWorkspace(workspaceName);
 		Folder parent;
 		if (ROOT_UUID.equals(node)) {
@@ -64,19 +68,21 @@ public class LibraryController {
 		} else {
 			parent = libraryService.getFolder(workspace, node);
 		}
-		final PrintWriter writer = response.getWriter();
-		writer.println("[");
+        final JsonFactory factory = new JsonFactory();
+        final JsonGenerator generator = factory.createJsonGenerator(writer);
+        generator.writeStartArray();
 		libraryService.visitFolders(workspace, parent, new FolderCallback() {
-			public void visit(final Folder folder) {
-				writer.println("\t{");
-				writer.println("\t\tid: '" + folder.getId() + "',");
-				writer.println("\t\ttext: '" + folder.getName() + "',");
-				writer.println("\t\tleaf: false,");
-				writer.println("\t\tcls: 'folder',");
-				writer.println("\t},");
+			public void visit(final Folder folder) throws Exception {
+                generator.writeStartObject();
+                generator.writeStringField("id", folder.getId());
+                generator.writeStringField("text", folder.getName());
+                generator.writeBooleanField("leaf", false);
+                generator.writeStringField("cls", "folder");
+                generator.writeEndObject();
 			}
 		});
-		writer.println("]");
+        generator.writeEndArray();
+        generator.close();
 	}
 
 	@RequestMapping(value = "files.json", produces = "application/json")
@@ -88,50 +94,37 @@ public class LibraryController {
 			@RequestParam(value = "limit", required = false) final int limit,
 			final HttpServletResponse response) throws Exception {
 		final Workspace workspace = libraryService.getWorkspace(workspaceName);
-		final SimpleDateFormat dateFormat = new SimpleDateFormat(
-				"yyyy-MM-DD HH:mm:ss", response.getLocale());
-		Folder folder;
+		final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss", response.getLocale());
+		final Folder folder;
 		if (ROOT_UUID.equals(node)) {
 			folder = libraryService.getRoot(workspace);
 		} else {
 			folder = libraryService.getFolder(workspace, node);
 		}
-		final PrintWriter writer = response.getWriter();
-		writer.println("{ files: [");
-		libraryService.visitFiles(workspace, folder, new FileCallback() {
-			private boolean first = true;
-
-			public void visit(final File file) {
-				if (first) {
-					first = false;
-				} else {
-					writer.println(",");
-				}
-				writer.println("\t{");
-				writer.println("\t\tid: '" + file.getId() + "',");
-				writer.print("\t\tname: '" + file.getName());
+        final JsonFactory factory = new JsonFactory();
+        final JsonGenerator generator = factory.createJsonGenerator(response.getWriter());
+        generator.writeStartObject();
+        generator.writeArrayFieldStart("files");
+  		libraryService.visitFiles(workspace, folder, new FileCallback() {
+			public void visit(final File file) throws Exception {
+                generator.writeStartObject();
+                generator.writeStringField("id", file.getId());
+                generator.writeStringField("name", file.getName());
 				if (file.getMimeType() != null) {
-					writer.println("',");
-					writer.print("\t\tmimeType: '");
-					writer.print(file.getMimeType());
+                    generator.writeStringField("mimeType", file.getMimeType());
 				}
 				if (file.getEncoding() != null) {
-					writer.println("',");
-					writer.print("\t\tencoding: '");
-					writer.print(file.getEncoding());
+                    generator.writeStringField("encoding", file.getEncoding());
 				}
 				if (file.getLastModified() != null) {
-					writer.println("',");
-					writer.print("\t\tlastModified: '");
-					writer.print(dateFormat.format(file.getLastModified()
-							.getTime()));
+                    generator.writeStringField("lastModified", dateFormat.format(file.getLastModified().getTime()));
 				}
-				writer.println("'");
-				writer.print("\t}");
+                generator.writeEndObject();
 			}
 		});
-		writer.println("");
-		writer.println("]}");
+		generator.writeEndArray();
+		generator.writeEndObject();
+        generator.close();
 	}
 
 	@RequestMapping("File-{workspace}-{nodeId}")
@@ -145,6 +138,7 @@ public class LibraryController {
 					final InputStream inputStream) throws Exception {
 				response.setStatus(HttpServletResponse.SC_OK);
 				response.setContentType(file.getMimeType());
+                response.addHeader("Content-Disposition", "attachment=" + file.getName());
 				final String encoding = file.getEncoding();
 				if (encoding == null) {
 					final OutputStream outputStream = response

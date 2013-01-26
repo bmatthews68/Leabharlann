@@ -4,5 +4,5 @@ import com.btmatthews.leabharlann.domain.File;
 
 public interface FileCallback {
 
-	void visit(File file);
+	void visit(File file) throws Exception;
 }
