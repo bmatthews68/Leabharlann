@@ -12,7 +12,7 @@
                 <Arg>javax.jcr.Repository</Arg>
                 <Arg>org.apache.jackrabbit.core.jndi.BindableRepositoryFactory</Arg>
                 <Arg>null</Arg>
-                <Call name="add" id="reference">
+                <Call name="add">
                     <Arg>
                         <New class="javax.naming.StringRefAddr">
                             <Arg>configFilePath</Arg>
@@ -20,7 +20,7 @@
                         </New>
                     </Arg>
                 </Call>
-                <Call name="add" id="reference">
+                <Call name="add">
                     <Arg>
                         <New class="javax.naming.StringRefAddr">
                             <Arg>repHomeDir</Arg>
