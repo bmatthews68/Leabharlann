@@ -119,6 +119,7 @@ public class LibraryController {
 				if (file.getLastModified() != null) {
                     generator.writeStringField("lastModified", dateFormat.format(file.getLastModified().getTime()));
 				}
+				generator.writeNumberField("size", file.getSize());
                 generator.writeEndObject();
 			}
 		});
@@ -127,7 +128,7 @@ public class LibraryController {
         generator.close();
 	}
 
-	@RequestMapping("File-{workspace}-{nodeId}")
+	@RequestMapping("{workspace}/File-{nodeId}")
 	public void getFile(@PathVariable("workspace") final String workspaceName,
 			@PathVariable("nodeId") final String nodeId,
 			final HttpServletResponse response) throws Exception {

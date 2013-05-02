@@ -12,16 +12,18 @@ public class FileImpl implements File {
 	private String mimeType;
 	private String encoding;
 	private Calendar lastModified;
+	private long size;
 
 	public FileImpl(final String id, final String name, final String path,
 			final String mimeType, final String encoding,
-			final Calendar lastModified) {
+			final Calendar lastModified, final long size) {
 		this.id = id;
 		this.name = name;
 		this.path = path;
 		this.mimeType = mimeType;
 		this.encoding = encoding;
 		this.lastModified = lastModified;
+		this.size = size;
 	}
 
 	public String getId() {
@@ -46,5 +48,9 @@ public class FileImpl implements File {
 
 	public Calendar getLastModified() {
 		return lastModified;
+	}
+
+	public long getSize() {
+		return size;
 	}
 }

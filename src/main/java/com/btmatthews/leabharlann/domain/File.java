@@ -15,4 +15,6 @@ public interface File {
 	String getEncoding();
 
 	Calendar getLastModified();
+	
+	long getSize();
 }

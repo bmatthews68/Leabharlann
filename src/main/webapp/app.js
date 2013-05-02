@@ -97,6 +97,14 @@ Ext.onReady(function(){
     	    	dataIndex: 'encoding'
     	    },
     	    {
+    	    	text     : 'Size',
+    	    	width    : 75,
+    	    	sortable : true,
+    	    	dataIndex: 'size',
+    	    	xtype    : 'numbercolumn',
+    	    	format   : '0,000'
+    	    },
+    	    {
     	    	text     : 'Last Modified',
     	    	width    : 75,
     	    	sortable : true,
@@ -106,7 +114,7 @@ Ext.onReady(function(){
     	listeners: {
     		itemClick: function(panel, file) {
     			var target = {
-    					href: 'files/' + file.id,
+    					href: 'files/default/' + file.id,
     					title: file.name
     			};
     			Ext.ux.Lightbox.open(target);
