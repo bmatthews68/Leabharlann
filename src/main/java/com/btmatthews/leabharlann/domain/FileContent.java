@@ -16,41 +16,25 @@
 
 package com.btmatthews.leabharlann.domain;
 
-import java.util.Map;
-
 /**
- * Describes a folder in the content repository.
+ * Describes a file's content.
  *
  * @author <a href="mailto:brian@btmatthews.com">Brian Matthews</a>
  * @since 1.0.0
  */
-public interface Folder {
+public interface FileContent {
 
     /**
-     * Get the folder identifier.
+     * Get the workspace containing the file.
      *
-     * @return The folder identifier.
+     * @return The workspace.
+     */
+    String getWorkspace();
+
+    /**
+     * Get the file identifier.
+     *
+     * @return The file identifier.
      */
     String getId();
-
-    /**
-     * Get the folder name.
-     *
-     * @return The folder name.
-     */
-    String getName();
-
-    /**
-     * Get the folder path.
-     *
-     * @return The folder path.
-     */
-    String getPath();
-
-    /**
-     * Get the folder attributes.
-     *
-     * @return The folder attributes.
-     */
-    Map<String, String> getAttributes();
 }

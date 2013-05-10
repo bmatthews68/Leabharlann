@@ -1,14 +1,98 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>Leabharlann</title>
-    <link rel="stylesheet" type="text/css" href="extjs/resources/css/ext-all.css" />
-    <link rel="stylesheet" type="text/css" href="css/lightbox.css" />
-    <script type="text/javascript" src="extjs/ext-all.js"></script>
-    <script type="text/javascript" src="app.js"></script>
-    <script type="text/javascript" src="js/lightbox.js"></script>  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/select2.css" />
+    <link rel="sytlesheet" type="text/css" href="css/jquery-ui.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/pqgrid.min.css"/>
+    <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/jquery.mustache.js"></script>
+    <script type="text/javascript" src="js/select2.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="js/jquery.dynatree.min.js"></script>
+    <script type="text/javascript" src="js/pqgrid.min.js"></script>
 </head>
 <body>
-<div id="workspaceDropdown"></div>
-<div id="repositoryBrowser"></div>
+
+    <form>
+        <input id="workspaces" type="hidden" />
+    </form>
+
+    <div id="repositoryBrowser">
+        <div id="folders"></div>
+        <div id="files"></div>
+    </div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+
+        $('#workspaces').select2({
+            placeholder: 'Pick a workspace',
+            width:'220px',
+            ajax: {
+                url: 'api/workspaces',
+                dataType: 'json',
+                data: function (term, page) { return { } },
+                results: function(data, page) { return { results: data } }
+            },
+            id: function(workspace) { return workspace.name; },
+            formatSelection: function(workspace) { return workspace.name; },
+            formatResult: function(workspace) { return workspace.name; }
+        });
+
+        $("#folders").dynatree({
+            initAjax: {
+                url: '/api/workspaces/default/folders/00000000-0000-0000-0000-000000000000/folders'
+            },
+            onLazyRead: function(node) {
+                node.appendAjax({
+                    url: '/api/workspaces/default/folders/' + node.data.key + '/folder'
+                });
+            }
+        });
+
+
+       $("#files").pqGrid({
+            width: 700,
+            height: 400,
+            colModel: [
+                { title: 'Name' },
+                { title: 'MIME Type' },
+                { title: 'Encoding' },
+                { title: 'Size', dataType: 'integer' },
+                { title: 'Last Modified' }
+            ],
+            dataModel: {
+                data: [
+                    [ 'xxx', 'xxxx', 'xxxx', 9999, 'xxxxx'],
+                    [ 'xxx', 'xxxx', 'xxxx', 9999, 'xxxxx']
+                ]
+            }
+        });
+/*
+        jQuery("#repositoryBrowser").jqGrid({
+            treeGrid: true,
+            treeGridModel: 'nested',
+            ExpandColumn : 'name',
+            url: '/workspaces/default/folders/00000000-0000-0000-0000-000000000000',
+            datatype: 'json',
+            mtype: 'GET',
+            colNames:['id',"Name","MIME Type", "Encoding", "Size","Last Modified"],
+            colModel:[
+                {name:'id',index:'id', width:1,hidden:true,key:true},
+                {name:'name',index:'name', width:180},
+                {name:'mimeType',index:'mimeType', width:80},
+                {name:'encoding',index:'encoding', width:80, align:"right"},
+                {name:'size',index:'size', width:80},
+                {name:'lastModified',index:'lastModified'}
+            ],
+            height:'auto'
+        });
+    */
+    });
+</script>
 </body>
 </html>

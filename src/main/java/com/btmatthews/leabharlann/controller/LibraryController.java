@@ -1,163 +1,152 @@
+/*
+ * Copyright 2012-2013 Brian Matthews
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.btmatthews.leabharlann.controller;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import com.btmatthews.leabharlann.domain.File;
+import com.btmatthews.leabharlann.domain.FileContent;
 import com.btmatthews.leabharlann.domain.Folder;
 import com.btmatthews.leabharlann.domain.Workspace;
-import com.btmatthews.leabharlann.service.FileCallback;
-import com.btmatthews.leabharlann.service.FileDataCallback;
-import com.btmatthews.leabharlann.service.FolderCallback;
 import com.btmatthews.leabharlann.service.LibraryService;
-import com.btmatthews.leabharlann.service.WorkspaceCallback;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+/**
+ * A Spring MVC controller that implements the endpoints for the RESTful interface to the content repository.
+ *
+ * @author <a href="mailto:brian@btmatthews.com">Brian Matthews</a>
+ * @since 1.0.0
+ */
 @Controller
 public class LibraryController {
 
-	private static final String ROOT_UUID = "00000000-0000-0000-0000-000000000000";
+    /**
+     * Dummy node identifier for the root repository.
+     */
+    private static final String ROOT_UUID = "00000000-0000-0000-0000-000000000000";
+    /**
+     * The service bean used to access and manipulate the content repository.
+     */
+    private LibraryService libraryService;
 
-	private static final String DEFAULT_WORKSPACE = "default";
+    /**
+     * Inject the service bean used to access and manipulate the content repository.
+     *
+     * @param service The service bean.
+     */
+    @Autowired
+    public void setLibraryService(final LibraryService service) {
+        libraryService = service;
+    }
 
-	private LibraryService libraryService;
+    /**
+     * The endpoint that returns a list of workspace descriptors.
+     *
+     * @return A list of {@link Workspace} descriptors.
+     */
+    @RequestMapping(value = "workspaces", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<Workspace> getWorkspaces() {
+        return libraryService.getWorkspaces();
+    }
 
-	@Autowired
-	public void setLibraryService(final LibraryService service) {
-		libraryService = service;
-	}
+    /**
+     * The endpoint that creates a new sub-folder in a workspace.
+     *
+     * @param workspaceName The workspace name.
+     * @param node          The node identifier of the parent folder.
+     * @param folder        The {@link Folder} descriptor for the new folder.
+     * @return The {@link Folder} for the newly created node.
+     */
+    @RequestMapping(value = "workspaces/{workspace}/folders/{node}/folder", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseBody
+    public Folder createFolder(@PathVariable("workspace") final String workspaceName,
+                               @PathVariable("node") final String node,
+                               @RequestBody final Folder folder) {
+        final Workspace workspace = libraryService.getWorkspace(workspaceName);
+        return libraryService.createFolder(workspace, node, folder.getName());
+    }
 
-	@RequestMapping(value = "workspaces.json", produces = "application/json")
-	public void getWorkspaces(final PrintWriter writer)
-			throws Exception {
-        final JsonFactory factory = new JsonFactory();
-        final JsonGenerator generator = factory.createJsonGenerator(writer);
-		generator.writeStartArray();
-        libraryService.visitWorkspaces(new WorkspaceCallback() {
-            public void visit(final Workspace workspace) throws Exception {
-                generator.writeStartObject();
-                generator.writeStringField("name", workspace.getName());
-                generator.writeEndObject();
-            }
-        });
-        generator.writeEndArray();
-        generator.close();
-	}
+    /**
+     * The endpoint that returns a list of sub-folders in a folder.
+     *
+     * @param workspaceName The workspace name.
+     * @param node          The node identifier of the parent folder.
+     * @return A list of {@link Folder} descriptors.
+     */
+    @RequestMapping(value = "workspaces/{workspace}/folders/{node}/folders", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<Folder> getFolders(@PathVariable("workspace") final String workspaceName,
+                                   @PathVariable("node") final String node) {
+        final Workspace workspace = libraryService.getWorkspace(workspaceName);
+        Folder parent;
+        if (ROOT_UUID.equals(node)) {
+            parent = libraryService.getRoot(workspace);
+        } else {
+            parent = libraryService.getFolder(workspace, node);
+        }
+        return libraryService.getFolders(workspace, parent);
+    }
 
-	@RequestMapping(value = "folders.json", produces = "application/json")
-	public void getFolders(
-			@RequestParam(value = "workspace", defaultValue = DEFAULT_WORKSPACE) final String workspaceName,
-			@RequestParam(value = "node", defaultValue = ROOT_UUID) final String node,
-			final PrintWriter writer) throws Exception {
-		final Workspace workspace = libraryService.getWorkspace(workspaceName);
-		Folder parent;
-		if (ROOT_UUID.equals(node)) {
-			parent = libraryService.getRoot(workspace);
-		} else {
-			parent = libraryService.getFolder(workspace, node);
-		}
-        final JsonFactory factory = new JsonFactory();
-        final JsonGenerator generator = factory.createJsonGenerator(writer);
-        generator.writeStartArray();
-		libraryService.visitFolders(workspace, parent, new FolderCallback() {
-			public void visit(final Folder folder) throws Exception {
-                generator.writeStartObject();
-                generator.writeStringField("id", folder.getId());
-                generator.writeStringField("text", folder.getName());
-                generator.writeBooleanField("leaf", false);
-                generator.writeStringField("cls", "folder");
-                generator.writeEndObject();
-			}
-		});
-        generator.writeEndArray();
-        generator.close();
-	}
+    /**
+     * The endpoint that returns a list of files in a folder.
+     *
+     * @param workspaceName The workspace name.
+     * @param node          The node identifier of the parent folder.
+     * @return A list of {@link File} descriptors.
+     */
+    @RequestMapping(value = "workspaces/{workspace}/folders/{node}/files", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<File> getFiles(@PathVariable("workspace") final String workspaceName,
+                               @PathVariable("node") final String node) {
+        final Workspace workspace = libraryService.getWorkspace(workspaceName);
+        final Folder folder;
+        if (ROOT_UUID.equals(node)) {
+            folder = libraryService.getRoot(workspace);
+        } else {
+            folder = libraryService.getFolder(workspace, node);
+        }
+        return libraryService.getFiles(workspace, folder);
+    }
 
-	@RequestMapping(value = "files.json", produces = "application/json")
-	public void getFiles(
-			@RequestParam(value = "workspace", defaultValue = DEFAULT_WORKSPACE) final String workspaceName,
-			@RequestParam(value = "node", defaultValue = ROOT_UUID) final String node,
-			@RequestParam(value = "page", required = false) final int page,
-			@RequestParam(value = "start", required = false) final int start,
-			@RequestParam(value = "limit", required = false) final int limit,
-			final HttpServletResponse response) throws Exception {
-		final Workspace workspace = libraryService.getWorkspace(workspaceName);
-		final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss", response.getLocale());
-		final Folder folder;
-		if (ROOT_UUID.equals(node)) {
-			folder = libraryService.getRoot(workspace);
-		} else {
-			folder = libraryService.getFolder(workspace, node);
-		}
-        final JsonFactory factory = new JsonFactory();
-        final JsonGenerator generator = factory.createJsonGenerator(response.getWriter());
-        generator.writeStartObject();
-        generator.writeArrayFieldStart("files");
-  		libraryService.visitFiles(workspace, folder, new FileCallback() {
-			public void visit(final File file) throws Exception {
-                generator.writeStartObject();
-                generator.writeStringField("id", file.getId());
-                generator.writeStringField("name", file.getName());
-				if (file.getMimeType() != null) {
-                    generator.writeStringField("mimeType", file.getMimeType());
-				}
-				if (file.getEncoding() != null) {
-                    generator.writeStringField("encoding", file.getEncoding());
-				}
-				if (file.getLastModified() != null) {
-                    generator.writeStringField("lastModified", dateFormat.format(file.getLastModified().getTime()));
-				}
-                generator.writeEndObject();
-			}
-		});
-		generator.writeEndArray();
-		generator.writeEndObject();
-        generator.close();
-	}
-
-	@RequestMapping("File-{workspace}-{nodeId}")
-	public void getFile(@PathVariable("workspace") final String workspaceName,
-			@PathVariable("nodeId") final String nodeId,
-			final HttpServletResponse response) throws Exception {
-		final Workspace workspace = libraryService.getWorkspace(workspaceName);
-		final File file = libraryService.getFile(workspace, nodeId);
-		libraryService.visitFileData(workspace, file, new FileDataCallback() {
-			public void visitFileData(final File file,
-					final InputStream inputStream) throws Exception {
-				response.setStatus(HttpServletResponse.SC_OK);
-				response.setContentType(file.getMimeType());
-                response.addHeader("Content-Disposition", "attachment=" + file.getName());
-				final String encoding = file.getEncoding();
-				if (encoding == null) {
-					final OutputStream outputStream = response
-							.getOutputStream();
-					try {
-						IOUtils.copy(inputStream, outputStream);
-					} finally {
-						IOUtils.closeQuietly(outputStream);
-					}
-				} else {
-					response.setCharacterEncoding(encoding);
-					final PrintWriter writer = response.getWriter();
-					try {
-						IOUtils.copy(inputStream, writer);
-					} finally {
-						IOUtils.closeQuietly(writer);
-					}
-				}
-			}
-		});
-	}
+    /**
+     * The endpoint that returns the content of a file. The {@link com.btmatthews.leabharlann.view.FileContentMessageConverter}
+     * message converter will retrieve the file content from the repository and marshal into the servlet response's output
+     * stream.
+     *
+     * @param workspaceName The workspace name.
+     * @param nodeId        The node identifier of the file.
+     * @return A {@link FileContent} descriptor.
+     */
+    @RequestMapping("workspaces/{workspace}/files/{nodeId}/contents")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public FileContent getFile(@PathVariable("workspace") final String workspaceName,
+                               @PathVariable("nodeId") final String nodeId) {
+        final Workspace workspace = libraryService.getWorkspace(workspaceName);
+        final File file = libraryService.getFile(workspace, nodeId);
+        return libraryService.getFileContent(workspace, file);
+    }
 }
