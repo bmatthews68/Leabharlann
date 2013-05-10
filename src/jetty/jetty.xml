@@ -3,16 +3,14 @@
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
 
     <New class="org.eclipse.jetty.plus.jndi.Resource">
-        <Arg>
-            <Ref id="Server"/>
-        </Arg>
+        <Arg/>
         <Arg>jcr/local</Arg>
         <Arg>
-            <New class="javax.naming.Reference" id="reference">
+            <New class="javax.naming.Reference">
                 <Arg>javax.jcr.Repository</Arg>
                 <Arg>org.apache.jackrabbit.core.jndi.BindableRepositoryFactory</Arg>
                 <Arg>null</Arg>
-                <Call name="add" id="reference">
+                <Call name="add">
                     <Arg>
                         <New class="javax.naming.StringRefAddr">
                             <Arg>configFilePath</Arg>
@@ -20,7 +18,7 @@
                         </New>
                     </Arg>
                 </Call>
-                <Call name="add" id="reference">
+                <Call name="add">
                     <Arg>
                         <New class="javax.naming.StringRefAddr">
                             <Arg>repHomeDir</Arg>
