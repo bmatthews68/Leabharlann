@@ -19,6 +19,10 @@ package com.btmatthews.leabharlann.config;
 import com.btmatthews.atlas.jcr.CredentialsProvider;
 import com.btmatthews.atlas.jcr.RepositoryProvider;
 import com.btmatthews.atlas.jcr.config.PooledRepositoryConfiguration;
+import com.btmatthews.leabharlann.service.EncodingDetector;
+import com.btmatthews.leabharlann.service.TypeDetector;
+import com.btmatthews.leabharlann.service.impl.ICU4JEncodingDetector;
+import com.btmatthews.leabharlann.service.impl.TikaTypeDetector;
 import com.btmatthews.leabharlann.view.FileContentMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -93,6 +97,16 @@ public class WebConfig extends WebMvcConfigurerAdapter {
                 return repository;
             }
         };
+    }
+
+    @Bean
+    public TypeDetector typeDetector() {
+        return new TikaTypeDetector();
+    }
+
+    @Bean
+    public EncodingDetector encodingDetector() {
+        return new ICU4JEncodingDetector();
     }
 
     /**

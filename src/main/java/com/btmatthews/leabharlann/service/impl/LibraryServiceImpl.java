@@ -19,17 +19,19 @@ package com.btmatthews.leabharlann.service.impl;
 import com.btmatthews.atlas.jcr.JCRAccessor;
 import com.btmatthews.atlas.jcr.NodeCallback;
 import com.btmatthews.atlas.jcr.NodeVoidCallback;
-import com.btmatthews.atlas.jcr.SessionVoidCallback;
+import com.btmatthews.atlas.jcr.SessionCallback;
 import com.btmatthews.leabharlann.domain.File;
 import com.btmatthews.leabharlann.domain.FileContent;
 import com.btmatthews.leabharlann.domain.Folder;
 import com.btmatthews.leabharlann.domain.Workspace;
-import com.btmatthews.leabharlann.service.LibraryService;
+import com.btmatthews.leabharlann.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -56,6 +58,8 @@ public class LibraryServiceImpl implements LibraryService {
      * The {@link JCRAccessor} API object used to access the Java Content Repository.
      */
     private JCRAccessor jcrAccessor;
+    private TypeDetector typeDetector;
+    private EncodingDetector encodingDetector;
 
     /**
      * Inject the {@link JCRAccessor} API object used to access the Java Content repository.
@@ -65,6 +69,16 @@ public class LibraryServiceImpl implements LibraryService {
     @Autowired
     public void setJcrAccessor(final JCRAccessor accessor) {
         jcrAccessor = accessor;
+    }
+
+    @Autowired
+    public void setTypeDetector(final TypeDetector detector) {
+        typeDetector = detector;
+    }
+
+    @Autowired
+    public void setEncodingDetector(final EncodingDetector detector) {
+        encodingDetector = detector;
     }
 
     /**
@@ -83,19 +97,19 @@ public class LibraryServiceImpl implements LibraryService {
      * @return A list of {@link Workspace} descriptors.
      */
     public List<Workspace> getWorkspaces() {
-        final List<Workspace> workspaces = new ArrayList<Workspace>();
-        jcrAccessor.withSession("default", new SessionVoidCallback() {
+        return jcrAccessor.withSession("default", new SessionCallback<List<Workspace>>() {
             @Override
-            public void doInSession(Session session) throws RepositoryException {
+            public List<Workspace> doInSession(Session session) throws RepositoryException {
+                final List<Workspace> workspaces = new ArrayList<Workspace>();
                 final javax.jcr.Workspace workspace = session.getWorkspace();
                 final String[] workspaceNames = workspace.getAccessibleWorkspaceNames();
                 for (final String workspaceName : workspaceNames) {
                     final Workspace workspaceFolder = getWorkspace(workspaceName);
                     workspaces.add(workspaceFolder);
                 }
+                return workspaces;
             }
         });
-        return workspaces;
     }
 
     /**
@@ -215,6 +229,13 @@ public class LibraryServiceImpl implements LibraryService {
         return new FileContentImpl(workspace.getName(), file.getId());
     }
 
+    public void importContents(final Workspace workspace, final Folder parent, final ImportSource source) {
+        jcrAccessor.withNodeId(
+                workspace.getName(),
+                parent.getId(),
+                new ImportContentsCallback(source));
+    }
+
     /**
      * Callback that creates a {@link Folder} descriptor for matching repository nodes.
      */
@@ -232,6 +253,77 @@ public class LibraryServiceImpl implements LibraryService {
         public Folder doInSessionWithNode(final Session session, final Node node) throws RepositoryException {
             return new FolderImpl(node.getIdentifier(), node.getName(),
                     node.getPath());
+        }
+    }
+
+    private class ImportContentsCallback implements NodeVoidCallback {
+
+        private ImportSource source;
+
+        ImportContentsCallback(final ImportSource source) {
+            this.source = source;
+        }
+
+        @Override
+        public void doInSessionWithNode(final Session session, final Node node) throws Exception {
+            source.process(new ImportContentsSourceCallback(session, node));
+            session.save();
+        }
+    }
+
+    private class ImportContentsSourceCallback implements ImportCallback {
+
+        private Session session;
+        private Node node;
+
+        ImportContentsSourceCallback(final Session session, final Node node) {
+            this.session = session;
+            this.node = node;
+        }
+
+        @Override
+        public void directory(final String path) throws Exception {
+            if (!"/".equals(path)) {
+                final String[] pathElements = StringUtils.split(path, "/");
+                Node currentNode = node;
+                for (final String pathElement : pathElements) {
+                    if (currentNode.hasNode(pathElement)) {
+                        currentNode = currentNode.getNode(pathElement);
+                    } else {
+                        currentNode = currentNode.addNode(pathElement, NodeType.NT_FOLDER);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void file(final String path, final long lastModified, final byte[] contents) throws Exception {
+            final String[] pathElements = StringUtils.split(path, "/");
+            Node currentNode = node;
+            for (int i = 0; i < pathElements.length - 1; i++) {
+                if (currentNode.hasNode(pathElements[i])) {
+                    currentNode = currentNode.getNode(pathElements[i]);
+                } else {
+                    currentNode = currentNode.addNode(pathElements[i], NodeType.NT_FOLDER);
+                }
+            }
+            final String filename = pathElements[pathElements.length - 1];
+            currentNode = currentNode.addNode(filename, NodeType.NT_FILE);
+            currentNode = currentNode.addNode(Node.JCR_CONTENT, NodeType.NT_RESOURCE);
+            final String encoding = encodingDetector.detect(filename, contents);
+            if (encoding != null) {
+                currentNode.setProperty(Property.JCR_ENCODING, encoding);
+            }
+            final String mimeType = typeDetector.detect(filename, contents);
+            if (mimeType != null) {
+                currentNode.setProperty(Property.JCR_MIMETYPE, mimeType);
+            }
+            final Calendar lastModifiedDate = Calendar.getInstance();
+            lastModifiedDate.setTimeInMillis(lastModified);
+            currentNode.setProperty(Property.JCR_LAST_MODIFIED, lastModifiedDate);
+            final ValueFactory valueFactory = session.getValueFactory();
+            final Binary data = valueFactory.createBinary(new ByteArrayInputStream(contents));
+            currentNode.setProperty(Property.JCR_DATA, data);
         }
     }
 

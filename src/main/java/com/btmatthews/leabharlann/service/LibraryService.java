@@ -109,4 +109,6 @@ public interface LibraryService {
      * @return The {@link FileContent} descriptor.
      */
     FileContent getFileContent(Workspace workspace, File file);
+
+    void importContents(Workspace workspace, Folder parent, ImportSource source);
 }

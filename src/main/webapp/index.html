@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Leabharlann</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
-    <link rel="stylesheet" type="text/css" href="css/select2.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/select2.css"/>
     <link rel="sytlesheet" type="text/css" href="css/jquery-ui.min.css"/>
     <link rel="stylesheet" type="text/css" href="css/pqgrid.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/dynatree/ui.dynatree.css"/>
     <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/jquery.mustache.js"></script>
@@ -14,50 +15,68 @@
     <script type="text/javascript" src="js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="js/jquery.dynatree.min.js"></script>
     <script type="text/javascript" src="js/pqgrid.min.js"></script>
+    <style>
+        #folders{width:300px;height:480px}
+        #files{width:620px;height:480px}
+    </style>
 </head>
 <body>
-
-    <form>
-        <input id="workspaces" type="hidden" />
-    </form>
-
-    <div id="repositoryBrowser">
-        <div id="folders"></div>
-        <div id="files"></div>
+<div class="container">
+    <div class="row">
+        <form class="span12">
+            <input id="workspaces" type="hidden"/>
+        </form>
     </div>
 
+    <div class="row">
+        <div class="span4">
+            <div id="folders"></div>
+        </div>
+        <div class="span8">
+            <div id="files"></div>
+        </div>
+    </div>
+</div>
 <script type="text/javascript">
-    $(document).ready(function() {
-
+    $(document).ready(function () {
         $('#workspaces').select2({
             placeholder: 'Pick a workspace',
-            width:'220px',
+            width: '220px',
             ajax: {
                 url: 'api/workspaces',
                 dataType: 'json',
-                data: function (term, page) { return { } },
-                results: function(data, page) { return { results: data } }
+                data: function (term, page) {
+                    return { }
+                },
+                results: function (data, page) {
+                    return { results: data }
+                }
             },
-            id: function(workspace) { return workspace.name; },
-            formatSelection: function(workspace) { return workspace.name; },
-            formatResult: function(workspace) { return workspace.name; }
+            id: function (workspace) {
+                return workspace.name;
+            },
+            formatSelection: function (workspace) {
+                return workspace.name;
+            },
+            formatResult: function (workspace) {
+                return workspace.name;
+            }
         });
 
         $("#folders").dynatree({
             initAjax: {
                 url: '/api/workspaces/default/folders/00000000-0000-0000-0000-000000000000/folders'
             },
-            onLazyRead: function(node) {
+            onLazyRead: function (node) {
                 node.appendAjax({
                     url: '/api/workspaces/default/folders/' + node.data.key + '/folder'
                 });
             }
         });
 
-
-       $("#files").pqGrid({
-            width: 700,
-            height: 400,
+        $("#files").pqGrid({
+            width: 620,
+            height: 480,
             colModel: [
                 { title: 'Name' },
                 { title: 'MIME Type' },
@@ -72,26 +91,6 @@
                 ]
             }
         });
-/*
-        jQuery("#repositoryBrowser").jqGrid({
-            treeGrid: true,
-            treeGridModel: 'nested',
-            ExpandColumn : 'name',
-            url: '/workspaces/default/folders/00000000-0000-0000-0000-000000000000',
-            datatype: 'json',
-            mtype: 'GET',
-            colNames:['id',"Name","MIME Type", "Encoding", "Size","Last Modified"],
-            colModel:[
-                {name:'id',index:'id', width:1,hidden:true,key:true},
-                {name:'name',index:'name', width:180},
-                {name:'mimeType',index:'mimeType', width:80},
-                {name:'encoding',index:'encoding', width:80, align:"right"},
-                {name:'size',index:'size', width:80},
-                {name:'lastModified',index:'lastModified'}
-            ],
-            height:'auto'
-        });
-    */
     });
 </script>
 </body>
