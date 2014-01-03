@@ -104,9 +104,37 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.mortbay.jetty</groupId>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <path>/</path>
+                    <port>9080</port>
+                    <contextFile>${basedir}/context.xml</contextFile>
+                    <systemProperties>
+                        <com.btmatthews.leabharlann.jackrabbit.configFile>${basedir}/repository/repository.xml
+                        </com.btmatthews.leabharlann.jackrabbit.configFile>
+                        <com.btmatthews.leabharlann.jackrabbit.homeDir>${basedir}/repository
+                        </com.btmatthews.leabharlann.jackrabbit.homeDir>
+                    </systemProperties>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.jackrabbit</groupId>
+                        <artifactId>jackrabbit-core</artifactId>
+                        <version>2.6.5</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>javax.jcr</groupId>
+                        <artifactId>jcr</artifactId>
+                        <version>2.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>8.1.12.v20130726</version>
+                <version>9.1.0.v20131115</version>
                 <configuration>
                     <systemProperties>
                         <systemProperty>
@@ -121,41 +149,30 @@
                     <webApp>
                         <contextPath>/</contextPath>
                     </webApp>
-                    <connectors>
-                        <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                            <port>9080</port>
-                            <maxIdleTime>60000</maxIdleTime>
-                        </connector>
-                    </connectors>
+                    <httpConnector>
+                        <port>9080</port>
+                        <idleTimeout>60000</idleTimeout>
+                    </httpConnector>
+                    <useTestClasspath>true</useTestClasspath>
                     <jettyXml>${basedir}/src/jetty/jetty.xml</jettyXml>
                 </configuration>
                 <dependencies>
                     <dependency>
-                        <groupId>org.modeshape</groupId>
-                        <artifactId>modeshape-jcr</artifactId>
-                        <version>3.5.0.Final</version>
+                        <groupId>org.apache.jackrabbit</groupId>
+                        <artifactId>jackrabbit-core</artifactId>
+                        <version>2.6.5</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.modeshape</groupId>
-                        <artifactId>modeshape-jcr-api</artifactId>
-                        <version>3.5.0.Final</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.infinispan</groupId>
-                        <artifactId>infinispan-cachestore-cassandra</artifactId>
-                        <version>5.2.7.Final</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.jgroups</groupId>
-                        <artifactId>jgroups</artifactId>
-                        <version>3.3.5.Final</version>
+                        <groupId>javax.jcr</groupId>
+                        <artifactId>jcr</artifactId>
+                        <version>2.0</version>
                     </dependency>
                 </dependencies>
             </plugin>
         </plugins>
     </build>
     <dependencies>
-          <dependency>
+        <dependency>
             <groupId>com.btmatthews.atlas</groupId>
             <artifactId>atlas-jcr</artifactId>
             <version>1.0.0</version>
@@ -174,7 +191,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>3.2.4.RELEASE</version>
+            <version>4.0.0.RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -185,7 +202,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>3.2.4.RELEASE</version>
+            <version>4.0.0.RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -196,7 +213,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>3.2.4.RELEASE</version>
+            <version>4.0.0.RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -205,14 +222,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-            <version>1.9.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.12</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.3.1</version>
         </dependency>
         <dependency>
             <groupId>javax.jcr</groupId>
@@ -243,7 +255,7 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>51.2</version>
+            <version>52.1</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -262,6 +274,37 @@
             <artifactId>junit</artifactId>
             <version>4.11</version>
             <scope>test</scope>
+        </dependency>
+        <!-- WebJar Dependencies -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery</artifactId>
+            <version>2.0.3-1</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>3.0.3</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>select2</artifactId>
+            <version>3.4.4</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery-ui</artifactId>
+            <version>1.10.3</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jqgrid</artifactId>
+            <version>4.4.5</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
     <profiles>
@@ -296,7 +339,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.10</version>
+                <version>2.11</version>
                 <configuration>
                     <configLocation>config/sun_checks.xml</configLocation>
                 </configuration>

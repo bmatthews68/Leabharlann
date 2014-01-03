@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/" reloadable="false">
+    <Resource
+            name="jcr/local"
+            auth="Container"
+            type="javax.jcr.Repository"
+            factory="org.apache.jackrabbit.core.jndi.BindableRepositoryFactory"
+            configFilePath="src/jetty/repository.xml"
+            repHomeDir="target/repo" />
+</Context>

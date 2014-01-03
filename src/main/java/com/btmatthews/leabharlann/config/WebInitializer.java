@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 Brian Matthews
+ * Copyright 2012-2014 Brian Matthews
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,7 @@
 
 package com.btmatthews.leabharlann.config;
 
-import org.springframework.web.WebApplicationInitializer;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-import org.springframework.web.servlet.DispatcherServlet;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 /**
  * Initializes the web application.
@@ -29,21 +24,35 @@ import javax.servlet.ServletRegistration;
  * @author <a href="mailto:brian@btmatthews.com">Brian Matthews</a>
  * @since 1.0.0
  */
-public class WebInitializer implements WebApplicationInitializer {
+public class WebInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
     /**
-     * Load the application context defined in {@link WebConfig} and register servlet that implements the RESTful
-     * web service endpoints.
+     * Get the application context configurations.
      *
-     * @param container The servlet container.
+     * @return A list of application context configuration classes.
      */
     @Override
-    public void onStartup(final ServletContext container) {
-        final AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.register(WebConfig.class);
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class<?>[]{AppConfig.class};
+    }
 
-        final ServletRegistration.Dynamic dispatcher = container.addServlet("api", new DispatcherServlet(context));
-        dispatcher.setLoadOnStartup(1);
-        dispatcher.addMapping("/api/*");
+    /**
+     * Get the servlet context configurations.
+     *
+     * @return A list of servlet context configuration classes.
+     */
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class<?>[]{WebConfig.class};
+    }
+
+    /**
+     * Get the servlet mappings.
+     *
+     * @return A list of servlet mappings.
+     */
+    @Override
+    protected String[] getServletMappings() {
+        return new String[]{"/api/*"};
     }
 }

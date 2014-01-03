@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 Brian Matthews
+ * Copyright 2012-2014 Brian Matthews
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class LibraryController {
     /**
      * The service bean used to access and manipulate the content repository.
      */
-    private LibraryService libraryService;
+    private final LibraryService libraryService;
 
     /**
      * Inject the service bean used to access and manipulate the content repository.
@@ -53,7 +53,7 @@ public class LibraryController {
      * @param service The service bean.
      */
     @Autowired
-    public void setLibraryService(final LibraryService service) {
+    public LibraryController(final LibraryService service) {
         libraryService = service;
     }
 

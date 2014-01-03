@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 Brian Matthews
+ * Copyright 2012-2014 Brian Matthews
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,28 +57,30 @@ public class LibraryServiceImpl implements LibraryService {
     /**
      * The {@link JCRAccessor} API object used to access the Java Content Repository.
      */
-    private JCRAccessor jcrAccessor;
-    private TypeDetector typeDetector;
-    private EncodingDetector encodingDetector;
+    private final JCRAccessor jcrAccessor;
+    /**
+     * Used to determine the file's content (MIME) type.
+     */
+    private final TypeDetector typeDetector;
+    /**
+     * Used to determine the file's content encoding.
+     */
+    private final EncodingDetector encodingDetector;
 
     /**
      * Inject the {@link JCRAccessor} API object used to access the Java Content repository.
      *
-     * @param accessor The {@link JCRAccessor} API object.
+     * @param jcrAccessor      The {@link JCRAccessor} API object.
+     * @param typeDetector     Used to determine the file's content (MIME) type.
+     * @param encodingDetector Used to determine the file's content encoding.
      */
     @Autowired
-    public void setJcrAccessor(final JCRAccessor accessor) {
-        jcrAccessor = accessor;
-    }
-
-    @Autowired
-    public void setTypeDetector(final TypeDetector detector) {
-        typeDetector = detector;
-    }
-
-    @Autowired
-    public void setEncodingDetector(final EncodingDetector detector) {
-        encodingDetector = detector;
+    public LibraryServiceImpl(final JCRAccessor jcrAccessor,
+                              final TypeDetector typeDetector,
+                              final EncodingDetector encodingDetector) {
+        this.jcrAccessor = jcrAccessor;
+        this.typeDetector = typeDetector;
+        this.encodingDetector = encodingDetector;
     }
 
     /**
@@ -163,7 +165,8 @@ public class LibraryServiceImpl implements LibraryService {
      * @param id        The node identifier of the file.
      * @return The {@link File} descriptor.
      */
-    public File getFile(final Workspace workspace, final String id) {
+    public File getFile(final Workspace workspace,
+                        final String id) {
         return jcrAccessor.withNodeId(workspace.getName(), id, fileNodeCallback);
     }
 
@@ -200,7 +203,8 @@ public class LibraryServiceImpl implements LibraryService {
      * @param parent    The {@link Folder} descriptor of the parent folder.
      * @return A list containing a {@link File} descriptor for each file.
      */
-    public List<File> getFiles(final Workspace workspace, final Folder parent) {
+    public List<File> getFiles(final Workspace workspace,
+                               final Folder parent) {
         final List<File> files = new ArrayList<File>();
         jcrAccessor.withNodeId(workspace.getName(), parent.getId(), new NodeVoidCallback() {
             @Override
@@ -225,11 +229,21 @@ public class LibraryServiceImpl implements LibraryService {
      * @param file      The {@link File} descriptor.
      * @return The {@link FileContent} descriptor.
      */
-    public FileContent getFileContent(final Workspace workspace, final File file) {
+    public FileContent getFileContent(final Workspace workspace,
+                                      final File file) {
         return new FileContentImpl(workspace.getName(), file.getId());
     }
 
-    public void importContents(final Workspace workspace, final Folder parent, final ImportSource source) {
+    /**
+     * Import contents into the repository.
+     *
+     * @param workspace The target workspace in the repository.
+     * @param parent    The target directory in the repository.
+     * @param source    The import source.
+     */
+    public void importContents(final Workspace workspace,
+                               final Folder parent,
+                               final ImportSource source) {
         jcrAccessor.withNodeId(
                 workspace.getName(),
                 parent.getId(),

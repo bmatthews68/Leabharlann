@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 Brian Matthews
+ * Copyright 2012-2014 Brian Matthews
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,9 @@ public interface LibraryService {
      * @param name      The name for the new child folder.
      * @return The {@link Folder} descriptor for the newly created folder.
      */
-    Folder createFolder(Workspace workspace, String parentId, String name);
+    Folder createFolder(Workspace workspace,
+                        String parentId,
+                        String name);
 
     /**
      * Get the folder identified by {@code id} in the workspace described by {@code workspace}.
@@ -72,7 +74,8 @@ public interface LibraryService {
      * @param id        The node identifier of the folder.
      * @return The {@link Folder} descriptor.
      */
-    Folder getFolder(Workspace workspace, String id);
+    Folder getFolder(Workspace workspace,
+                     String id);
 
     /**
      * Get the file identified by {@code id} in the workspace described by {@code workspace}.
@@ -81,7 +84,8 @@ public interface LibraryService {
      * @param id        The node identifier of the file.
      * @return The {@link File} descriptor.
      */
-    File getFile(Workspace workspace, String id);
+    File getFile(Workspace workspace,
+                 String id);
 
     /**
      * Get a list of {@link Folder} descriptors for the sub-folders of the folder described by {@code parent}.
@@ -90,7 +94,8 @@ public interface LibraryService {
      * @param parent    The {@link Folder} descriptor of the parent folder.
      * @return A list containing a {@link Folder} descriptor for each sub-folder.
      */
-    List<Folder> getFolders(Workspace workspace, Folder parent);
+    List<Folder> getFolders(Workspace workspace,
+                            Folder parent);
 
     /**
      * Get a list of {@link File} descriptors for the file in the folder described by {@code parent}.
@@ -99,7 +104,8 @@ public interface LibraryService {
      * @param parent    The {@link Folder} descriptor of the parent folder.
      * @return A list containing a {@link File} descriptor for each file.
      */
-    List<File> getFiles(Workspace workspace, Folder parent);
+    List<File> getFiles(Workspace workspace,
+                        Folder parent);
 
     /**
      * Get a {@link FileContent} descriptor for the file described by {@code file}.
@@ -108,7 +114,17 @@ public interface LibraryService {
      * @param file      The {@link File} descriptor.
      * @return The {@link FileContent} descriptor.
      */
-    FileContent getFileContent(Workspace workspace, File file);
+    FileContent getFileContent(Workspace workspace,
+                               File file);
 
-    void importContents(Workspace workspace, Folder parent, ImportSource source);
+    /**
+     * Import contents into the repository.
+     *
+     * @param workspace The target workspace in the repository.
+     * @param parent    The target directory in the repository.
+     * @param source    The import source.
+     */
+    void importContents(Workspace workspace,
+                        Folder parent,
+                        ImportSource source);
 }
