@@ -18,9 +18,12 @@ package com.btmatthews.leabharlann.config;
 
 import com.btmatthews.atlas.jcr.CredentialsProvider;
 import com.btmatthews.atlas.jcr.RepositoryProvider;
+import com.btmatthews.atlas.jcr.config.PooledRepositoryConfiguration;
 import org.apache.tika.Tika;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import javax.annotation.Resource;
 import javax.jcr.Credentials;
@@ -34,6 +37,8 @@ import javax.jcr.SimpleCredentials;
  * @since 1.0.0
  */
 @Configuration
+@Import(PooledRepositoryConfiguration.class)
+@ComponentScan({"com.btmatthews.leabharlann.service"})
 public class AppConfig {
 
     /**
@@ -78,6 +83,12 @@ public class AppConfig {
         };
     }
 
+    /**
+     * The Apache Tika utility is used to determine the content (MIME) type by analyzing the
+     * filename and content.
+     *
+     * @return The Apache Tika utility.
+     */
     @Bean
     public Tika tika() {
         return new Tika();

@@ -264,7 +264,9 @@ public class LibraryServiceImpl implements LibraryService {
          * @throws RepositoryException If there was an error accessing the node properties.
          */
         @Override
-        public Folder doInSessionWithNode(final Session session, final Node node) throws RepositoryException {
+        public Folder doInSessionWithNode(final Session session,
+                                          final Node node)
+                throws RepositoryException {
             return new FolderImpl(node.getIdentifier(), node.getName(),
                     node.getPath());
         }
@@ -272,14 +274,16 @@ public class LibraryServiceImpl implements LibraryService {
 
     private class ImportContentsCallback implements NodeVoidCallback {
 
-        private ImportSource source;
+        private final ImportSource source;
 
         ImportContentsCallback(final ImportSource source) {
             this.source = source;
         }
 
         @Override
-        public void doInSessionWithNode(final Session session, final Node node) throws Exception {
+        public void doInSessionWithNode(final Session session,
+                                        final Node node)
+                throws Exception {
             source.process(new ImportContentsSourceCallback(session, node));
             session.save();
         }
@@ -287,10 +291,11 @@ public class LibraryServiceImpl implements LibraryService {
 
     private class ImportContentsSourceCallback implements ImportCallback {
 
-        private Session session;
-        private Node node;
+        private final Session session;
+        private final Node node;
 
-        ImportContentsSourceCallback(final Session session, final Node node) {
+        ImportContentsSourceCallback(final Session session,
+                                     final Node node) {
             this.session = session;
             this.node = node;
         }
@@ -311,7 +316,10 @@ public class LibraryServiceImpl implements LibraryService {
         }
 
         @Override
-        public void file(final String path, final long lastModified, final byte[] contents) throws Exception {
+        public void file(final String path,
+                         final long lastModified,
+                         final byte[] contents)
+                throws Exception {
             final String[] pathElements = StringUtils.split(path, "/");
             Node currentNode = node;
             for (int i = 0; i < pathElements.length - 1; i++) {
@@ -355,7 +363,9 @@ public class LibraryServiceImpl implements LibraryService {
          * @throws RepositoryException If there was an error accessing the node properties.
          */
         @Override
-        public File doInSessionWithNode(final Session session, final Node node) throws RepositoryException {
+        public File doInSessionWithNode(final Session session,
+                                        final Node node)
+                throws RepositoryException {
             final Node resourceNode = node.getNode(Node.JCR_CONTENT);
             final String mimeType = jcrAccessor.getStringProperty(resourceNode,
                     Property.JCR_MIMETYPE);

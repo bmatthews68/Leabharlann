@@ -48,7 +48,9 @@ public class FolderImpl implements Folder {
      * @param name The folder name.
      * @param path The folder path.
      */
-    public FolderImpl(final String id, final String name, final String path) {
+    public FolderImpl(final String id,
+                      final String name,
+                      final String path) {
         this.id = id;
         this.name = name;
         this.path = path;

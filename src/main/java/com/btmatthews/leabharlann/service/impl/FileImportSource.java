@@ -53,7 +53,8 @@ public class FileImportSource implements ImportSource {
      * @throws Exception If there was an error.
      */
     @Override
-    public void process(final ImportCallback callback) throws Exception {
+    public void process(final ImportCallback callback)
+            throws Exception {
         if (file.isDirectory()) {
             processDirectory(file, callback);
         } else {

@@ -76,7 +76,8 @@ public class ZipFileImportSource implements ImportSource {
      * @throws Exception If there was a problem reading from the ZIP archive.
      */
     @Override
-    public void process(final ImportCallback callback) throws Exception {
+    public void process(final ImportCallback callback)
+            throws Exception {
 
         for (ZipEntry entry = zipInputStream.getNextEntry(); entry != null; entry = zipInputStream.getNextEntry()) {
             final String path = entry.getName();

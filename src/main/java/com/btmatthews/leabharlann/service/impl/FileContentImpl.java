@@ -41,7 +41,8 @@ public class FileContentImpl implements FileContent {
      * @param workspace The workspace name.
      * @param id        The file identifier.
      */
-    public FileContentImpl(final String workspace, final String id) {
+    public FileContentImpl(final String workspace,
+                           final String id) {
         this.workspace = workspace;
         this.id = id;
     }

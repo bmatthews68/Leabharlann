@@ -60,11 +60,10 @@ public class TestLibraryServiceImpl {
     public void setup() {
         initMocks(this);
         when(workspace.getName()).thenReturn("default");
-        final LibraryServiceImpl libraryServiceImpl = new LibraryServiceImpl();
-        libraryServiceImpl.setJcrAccessor(jcrAccessor);
-        libraryServiceImpl.setEncodingDetector(encodingDetector);
-        libraryServiceImpl.setTypeDetector(typeDetector);
-        libraryService = libraryServiceImpl;
+        libraryService = new LibraryServiceImpl(
+                jcrAccessor,
+                typeDetector,
+                encodingDetector);
     }
 
     @Test

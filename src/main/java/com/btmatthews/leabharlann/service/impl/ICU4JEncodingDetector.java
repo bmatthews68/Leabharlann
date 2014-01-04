@@ -31,7 +31,8 @@ import org.springframework.stereotype.Component;
 public class ICU4JEncodingDetector implements EncodingDetector {
 
     @Override
-    public String detect(final String name, final byte[] contents) {
+    public String detect(final String name,
+                         final byte[] contents) {
         if (contents == null || contents.length == 0) {
             return null;
         } else {

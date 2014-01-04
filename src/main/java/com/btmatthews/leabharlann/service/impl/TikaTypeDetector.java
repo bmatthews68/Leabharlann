@@ -18,6 +18,7 @@ package com.btmatthews.leabharlann.service.impl;
 
 import com.btmatthews.leabharlann.service.TypeDetector;
 import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
@@ -40,6 +41,7 @@ public class TikaTypeDetector implements TypeDetector {
      *
      * @param tika The Apache Tika utility.
      */
+    @Autowired
     public TikaTypeDetector(final Tika tika) {
         this.tika = tika;
     }

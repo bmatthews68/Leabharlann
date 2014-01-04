@@ -16,15 +16,12 @@
 
 package com.btmatthews.leabharlann.config;
 
-import com.btmatthews.atlas.jcr.config.PooledRepositoryConfiguration;
 import com.btmatthews.leabharlann.view.FileContentMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -38,8 +35,7 @@ import java.util.List;
  * @since 1.0.0
  */
 @Configuration
-@ComponentScan({"com.btmatthews.leabharlann.controller", "com.btmatthews.leabharlann.service", "com.btmatthews.leabharlann.view"})
-@Import(PooledRepositoryConfiguration.class)
+@ComponentScan({"com.btmatthews.leabharlann.controller", "com.btmatthews.leabharlann.view"})
 @EnableWebMvc
 public class WebConfig extends WebMvcConfigurerAdapter {
 
@@ -61,7 +57,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     }
 
     /**
-     * Register the {@link FileContentMessageConverter} and {@link MappingJacksonHttpMessageConverter} message converters.
+     * Register the {@link FileContentMessageConverter} and {@link MappingJackson2HttpMessageConverter} message converters.
      *
      * @param converters The list to which the message converters are added.
      */
