@@ -1,0 +1,17 @@
+{
+    "name": "Local Repository",
+    "jndiName": "jcr/local",
+    "monitoring": {
+        "enabled": true
+    },
+    "workspaces": {
+        "default" : "defaultWorkspace",
+        "predefined" : [ "stagingWorkspace"],
+        "allowCreation": true
+    },
+    "storage" : {
+        "cacheConfiguration": "",
+        "cacheName": "Local Repository",
+        "transactionManager"
+    }
+}

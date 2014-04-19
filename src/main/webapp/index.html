@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Leabharlann</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" type="text/css" href="webjars/bootstrap/3.0.3/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="webjars/select2/3.4.4/select2.css"/>
+    <link rel="stylesheet" type="text/css" href="webjars/jquery-ui/1.10.3/themes/base/minified/jquery.ui.theme.min.css" />
+    <link rel="stylesheet" type="text/css" href="webjars/jqgrid/4.4.5/css/ui.jqgrid.css" />
+    <style>
+        #folders{width:100%;height:480px}
+        #files{width:100%;height:480px}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <form class="col-lg-12">
+            <label for="workspaces">Workspace</label>
+            <input id="workspaces" type="hidden"/>
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-lg-3">
+            <div id="folders"></div>
+        </div>
+        <div class="col-lg-9">
+            <table id="files"></table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="webjars/jquery/2.0.3/jquery.min.js"></script>
+<script type="text/javascript" src="webjars/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="webjars/select2/3.4.4/select2.min.js"></script>
+<script type="text/javascript" src="webjars/jstree/1.0.0/jstree.min.js"></script>
+<script type="text/javascript" src="webjars/jqgrid/4.4.5/js/i18n/grid.locale-en.js"></script>
+<script type="text/javascript" src="webjars/jqgrid/4.4.5/js/minified/jquery.jqGrid.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#workspaces').select2({
+            placeholder: 'Pick a workspace',
+            width: '220px',
+            ajax: {
+                url: 'api/workspaces',
+                dataType: 'json',
+                data: function (term, page) {
+                    return { }
+                },
+                results: function (data, page) {
+                    return { results: data }
+                }
+            },
+            id: function (workspace) {
+                return workspace.name;
+            },
+            formatSelection: function (workspace) {
+                return workspace.name;
+            },
+            formatResult: function (workspace) {
+                return workspace.name;
+            }
+        });
+
+        $('#folders').jstree({
+            'core' : {
+                'data' : {
+                    'url': function(node) {
+                        console.log(">> " + node);
+                    },
+                    'data': function(node) {
+                        console.log("-- " + node);
+                    }
+                }
+            }
+        });
+
+        /*
+        $('#tree').jstree({
+            'core' : {
+                'data' : {
+                    'url' : function (node) {
+                        return node.id === '#' ?
+                                'ajax_roots.json' :
+                                'ajax_children.json';
+                    },
+                    'data' : function (node) {
+                        return { 'id' : node.id };
+                    }
+                }
+            });   */
+
+  /*
+
+
+        $("#folders").dynatree({
+            initAjax: {
+                url: '/api/workspaces/default/folders/00000000-0000-0000-0000-000000000000/folders'
+            },
+            onLazyRead: function (node) {
+                node.appendAjax({
+                    url: '/api/workspaces/default/folders/' + node.data.key + '/folder'
+                });
+            }
+        });
+          */
+        var dataArray = [
+            {name: 'logo.jpg', mimeType: 'image/jpeg', size:1001, lastModified: '2013-12-31'},
+            {name: 'favicon.ico', mimeType: 'image/x-icon', size:453, lastModified: '2013-12-31'}
+        ];
+
+        $("#files").jqGrid({
+            width: 620,
+            height: 480,
+            datatype: 'local',
+            colModel: [
+                { name: 'name', label: 'Name' },
+                { name: 'mimeType', label: 'MIME Type' },
+                { name: 'encoding', label: 'Encoding' },
+                { name: 'size', label: 'Size', dataType: 'integer' },
+                { name: 'lastModified', label: 'Last Modified' }
+            ],
+            data: dataArray
+        });
+    });
+</script>
+</body>
+</html>
