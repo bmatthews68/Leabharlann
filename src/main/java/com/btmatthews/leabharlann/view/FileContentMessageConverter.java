@@ -17,7 +17,7 @@
 package com.btmatthews.leabharlann.view;
 
 import com.btmatthews.atlas.jcr.JCRAccessor;
-import com.btmatthews.atlas.jcr.NodeVoidCallback;
+import com.btmatthews.atlas.jcr.NodeCallback;
 import com.btmatthews.atlas.jcr.RepositoryAccessException;
 import com.btmatthews.leabharlann.domain.FileContent;
 import org.apache.commons.io.IOUtils;
@@ -80,8 +80,7 @@ public class FileContentMessageConverter extends AbstractHttpMessageConverter<Fi
      * @param clazz        A class description.
      * @param inputMessage Used to access the servlet request headers and input stream.
      * @return Always throws an exception.
-     * @throws HttpMessageNotReadableException
-     *          Indicates that a {@link FileContent} cannot be read.
+     * @throws HttpMessageNotReadableException Indicates that a {@link FileContent} cannot be read.
      */
     @Override
     protected FileContent readInternal(final Class<? extends FileContent> clazz, final HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
@@ -93,16 +92,15 @@ public class FileContentMessageConverter extends AbstractHttpMessageConverter<Fi
      *
      * @param fileContent   Describes the file content.
      * @param outputMessage Used to access the servlet response headers and output stream.
-     * @throws IOException If there was an error streaming the file content.
-     * @throws HttpMessageNotWritableException
-     *                     If there was problem retrieving the file content from the Java Content Repository.
+     * @throws IOException                     If there was an error streaming the file content.
+     * @throws HttpMessageNotWritableException If there was problem retrieving the file content from the Java Content Repository.
      */
     @Override
     protected void writeInternal(final FileContent fileContent, final HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
         try {
-            jcrAccessor.withNodeId(fileContent.getWorkspace(), fileContent.getId(), new NodeVoidCallback() {
+            jcrAccessor.withNodeId(fileContent.getWorkspace(), fileContent.getId(), new NodeCallback() {
                 @Override
-                public void doInSessionWithNode(Session session, Node node) throws Exception {
+                public Object doInSessionWithNode(Session session, Node node) throws Exception {
                     final Node resourceNode = node.getNode(Node.JCR_CONTENT);
                     final String mimeType = jcrAccessor.getStringProperty(resourceNode, Property.JCR_MIMETYPE);
                     final Calendar lastModified = jcrAccessor.getCalendarProperty(resourceNode, Property.JCR_LAST_MODIFIED);
@@ -119,6 +117,7 @@ public class FileContentMessageConverter extends AbstractHttpMessageConverter<Fi
                     }
                     outputMessage.getHeaders().set("Content-Disposition", "attachment;filename=" + node.getName());
                     IOUtils.copy(data.getStream(), outputMessage.getBody());
+                    return null;
                 }
             });
         } catch (final RepositoryAccessException e) {

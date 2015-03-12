@@ -18,7 +18,6 @@ package com.btmatthews.leabharlann.service.impl;
 
 import com.btmatthews.atlas.jcr.JCRAccessor;
 import com.btmatthews.atlas.jcr.NodeCallback;
-import com.btmatthews.atlas.jcr.NodeVoidCallback;
 import com.btmatthews.atlas.jcr.SessionCallback;
 import com.btmatthews.leabharlann.domain.File;
 import com.btmatthews.leabharlann.domain.FileContent;
@@ -180,9 +179,9 @@ public class LibraryServiceImpl implements LibraryService {
     public List<Folder> getFolders(final Workspace workspace,
                                    final Folder parent) {
         final List<Folder> folders = new ArrayList<Folder>();
-        jcrAccessor.withNodeId(workspace.getName(), parent.getId(), new NodeVoidCallback() {
+        jcrAccessor.withNodeId(workspace.getName(), parent.getId(), new NodeCallback() {
             @Override
-            public void doInSessionWithNode(final Session session, final Node node) throws RepositoryException {
+            public Object doInSessionWithNode(final Session session, final Node node) throws RepositoryException {
                 final NodeIterator nodes = node.getNodes();
                 while (nodes.hasNext()) {
                     final Node child = nodes.nextNode();
@@ -191,6 +190,7 @@ public class LibraryServiceImpl implements LibraryService {
                         folders.add(folder);
                     }
                 }
+                return null;
             }
         });
         return folders;
@@ -206,9 +206,9 @@ public class LibraryServiceImpl implements LibraryService {
     public List<File> getFiles(final Workspace workspace,
                                final Folder parent) {
         final List<File> files = new ArrayList<File>();
-        jcrAccessor.withNodeId(workspace.getName(), parent.getId(), new NodeVoidCallback() {
+        jcrAccessor.withNodeId(workspace.getName(), parent.getId(), new NodeCallback() {
             @Override
-            public void doInSessionWithNode(final Session session, final Node node) throws RepositoryException {
+            public Object doInSessionWithNode(final Session session, final Node node) throws RepositoryException {
                 final NodeIterator nodes = node.getNodes();
                 while (nodes.hasNext()) {
                     final Node child = nodes.nextNode();
@@ -217,6 +217,7 @@ public class LibraryServiceImpl implements LibraryService {
                         files.add(file);
                     }
                 }
+                return null;
             }
         });
         return files;
@@ -272,7 +273,7 @@ public class LibraryServiceImpl implements LibraryService {
         }
     }
 
-    private class ImportContentsCallback implements NodeVoidCallback {
+    private class ImportContentsCallback implements NodeCallback {
 
         private final ImportSource source;
 
@@ -281,11 +282,12 @@ public class LibraryServiceImpl implements LibraryService {
         }
 
         @Override
-        public void doInSessionWithNode(final Session session,
+        public Object doInSessionWithNode(final Session session,
                                         final Node node)
                 throws Exception {
             source.process(new ImportContentsSourceCallback(session, node));
             session.save();
+            return null;
         }
     }
 
